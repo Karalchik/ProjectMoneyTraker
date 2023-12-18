@@ -15,48 +15,15 @@ mongoose.connect('mongodb+srv://tymofii:vNau4leD3Qw1lGv0@cluster0.mopamsc.mongod
 
 const secretKey = crypto.randomBytes(32).toString('hex');
 
-const User = mongoose.model('User', {
-  username: String,
-  password: String,
-});
+const walletRouter = require('./routes/wallets');
+const lossesRouter = require('./routes/losses');
+const incomesRouter = require('./routes/incomes');
+const usersRouter = require('./routes/users');
 
-app.post('/api/register', async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    console.log(req.body);
-    
-    const hashedPassword = await bcrypt.hash(String(password), 10);
-    const user = new User({ username: String(username), password: hashedPassword });
-    console.log(user);
-    await user.save();
-    res.status(201).send('User registered successfully.');
- 
-});
-
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username: String(username)});
-    console.log(user);
-    if (!user) {
-      return res.status(401).send('Invalid username or password.');
-    }
-
-    const passwordMatch = await bcrypt.compare(String(password), user.password);
-
-    if (!passwordMatch) {
-      return res.status(401).send('Invalid username or password.');
-    }
-
-    const token = jwt.sign({ username: user.username }, secretKey, { expiresIn: '1h' });
-    res.status(200).json({ token });
-  } catch (error) {
-    res.status(500).send('Error logging in.');
-  }
-});
-
-
+app.use('/api/wallet', walletRouter);
+app.use('/api/losses', lossesRouter);
+app.use('/api/incomes', incomesRouter);
+app.use('/api/users', usersRouter);
 
 // Будет работать через строк
 app.post('/api/login', async (req, res) => {
